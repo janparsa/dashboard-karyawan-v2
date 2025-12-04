@@ -1,0 +1,11 @@
+date,employee_id,event_type,value,notes
+2024-01-01,EMP001 - Paijo,delivery_success,10.0,Delivered on time
+2024-01-02,EMP001 - Paijo,customer_rating,4.5,Good service
+2024-01-03,EMP001 - Paijo,presence,1.0,Present
+2024-01-04,EMP002 - Siti,delivery_success,8.0,Delivered successfully
+2024-01-05,EMP002 - Siti,customer_rating,4.0,Average service
+2024-01-06,EMP002 - Siti,presence,1.0,Present
+2024-01-07,EMP003 - Budi,delivery_success,12.0,Excellent delivery
+2024-01-08,EMP003 - Budi,customer_rating,5.0,Outstanding service
+2024-01-09,EMP003 - Budi,presence,1.0,Present
+2024-01-10,EMP001 - Paijo,complaint,1.0,Late delivery

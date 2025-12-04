@@ -1,0 +1,9 @@
+employee_id,date,event_type,value
+EMP001 - Paijo,1/1/2024,Delivery_Count,125
+EMP001 - Paijo,1/1/2024,On_Time_Delivery_Rate,93.73
+EMP001 - Paijo,1/1/2024,Customer_Rating_Avg,4.28
+EMP001 - Paijo,1/1/2024,Fuel_Efficiency_km_per_liter,9.78
+EMP002 - Siti,1/1/2024,Delivery_Count,98
+EMP002 - Siti,1/1/2024,On_Time_Delivery_Rate,87.50
+EMP002 - Siti,1/1/2024,Customer_Rating_Avg,4.15
+EMP002 - Siti,1/1/2024,Fuel_Efficiency_km_per_liter,11.20
