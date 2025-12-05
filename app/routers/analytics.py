@@ -9,23 +9,26 @@ async def get_suggestions(
     start: str = Query(..., description="Start date (YYYY-MM-DD)"),
     end: str = Query(..., description="End date (YYYY-MM-DD)")
 ):
-    with get_db() as conn:
-        cursor = conn.cursor()
+    db = get_db()
+    employees = db.get_all_employees()
+    
+    employees_data = []
+    for emp in employees:
+        events = db.get_events_by_employee_and_date(emp.id, start, end)
         
-        # Get performance data
-        cursor.execute("""
-            SELECT e.name, e.role, 
-                   AVG(CASE WHEN ev.type = 'Delivery_Count' THEN ev.value END) as avg_deliveries,
-                   AVG(CASE WHEN ev.type = 'Customer_Rating_Avg' THEN ev.value END) as avg_rating,
-                   AVG(CASE WHEN ev.type = 'On_Time_Delivery_Rate' THEN ev.value END) as avg_ontime,
-                   AVG(CASE WHEN ev.type = 'Fuel_Efficiency_km_per_liter' THEN ev.value END) as avg_fuel
-            FROM employees e
-            JOIN events ev ON e.id = ev.employee_id
-            WHERE ev.date BETWEEN ? AND ?
-            GROUP BY e.id, e.name, e.role
-        """, (start, end))
+        delivery_events = [e.value for e in events if e.type == 'Delivery_Count']
+        rating_events = [e.value for e in events if e.type == 'Customer_Rating_Avg']
+        ontime_events = [e.value for e in events if e.type == 'On_Time_Delivery_Rate']
+        fuel_events = [e.value for e in events if e.type == 'Fuel_Efficiency_km_per_liter']
         
-        employees_data = cursor.fetchall()
+        employees_data.append({
+            'name': emp.name,
+            'role': emp.role,
+            'avg_deliveries': sum(delivery_events) / len(delivery_events) if delivery_events else None,
+            'avg_rating': sum(rating_events) / len(rating_events) if rating_events else None,
+            'avg_ontime': sum(ontime_events) / len(ontime_events) if ontime_events else None,
+            'avg_fuel': sum(fuel_events) / len(fuel_events) if fuel_events else None
+        })
     
     suggestions = []
     

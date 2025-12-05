@@ -11,23 +11,19 @@ async def get_scores(
     start: str = Query(..., description="Start date (YYYY-MM-DD)"),
     end: str = Query(..., description="End date (YYYY-MM-DD)")
 ):
-    with get_db() as conn:
-        cursor = conn.cursor()
-        
-        # Get all employees with proper name display
-        cursor.execute("SELECT id, name, role FROM employees")
-        employees = cursor.fetchall()
-        
-        # If no employees exist, return empty list
-        if not employees:
-            return []
+    db = get_db()
+    employees = db.get_all_employees()
+    
+    # If no employees exist, return empty list
+    if not employees:
+        return []
     
     scores = []
     for employee in employees:
-        score_data = calculate_score(employee['id'], start, end)
+        score_data = calculate_score(employee.id, start, end)
         scores.append(ScoreResponse(
-            employee_id=employee['id'],
-            name=f"{employee['role']} - {employee['name']}",
+            employee_id=employee.id,
+            name=f"{employee.role} - {employee.name}",
             score_total=score_data['score_total'],
             details=score_data['details']
         ))
