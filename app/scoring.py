@@ -1,7 +1,7 @@
 from app.database import get_db
 from typing import Dict, Any
 
-# Hardcoded scoring config to avoid file I/O
+# Hardcoded scoring config
 SCORING_CONFIG = {
     "productivity": 0.35,
     "quality": 0.25,
@@ -15,19 +15,27 @@ def load_scoring_config() -> Dict[str, float]:
 def calculate_score(employee_id: int, start_date: str, end_date: str) -> Dict[str, Any]:
     config = load_scoring_config()
     
-    db = get_db()
-    events = db.get_events_by_employee_and_date(employee_id, start_date, end_date)
+    with get_db() as conn:
+        cursor = conn.cursor()
+        
+        # Get events for employee in date range
+        cursor.execute("""
+            SELECT type, value FROM events 
+            WHERE employee_id = %s AND date BETWEEN %s AND %s
+        """, (employee_id, start_date, end_date))
+        
+        events = cursor.fetchall()
     
     # Calculate metrics based on new event types
-    delivery_count = sum(event.value for event in events if event.type == 'Delivery_Count')
+    delivery_count = sum(event['value'] for event in events if event['type'] == 'Delivery_Count')
     
-    on_time_events = [event.value for event in events if event.type == 'On_Time_Delivery_Rate']
+    on_time_events = [event['value'] for event in events if event['type'] == 'On_Time_Delivery_Rate']
     on_time_rate = sum(on_time_events) / len(on_time_events) if on_time_events else 0
     
-    rating_events = [event.value for event in events if event.type == 'Customer_Rating_Avg']
+    rating_events = [event['value'] for event in events if event['type'] == 'Customer_Rating_Avg']
     customer_rating = sum(rating_events) / len(rating_events) if rating_events else 0
     
-    fuel_events = [event.value for event in events if event.type == 'Fuel_Efficiency_km_per_liter']
+    fuel_events = [event['value'] for event in events if event['type'] == 'Fuel_Efficiency_km_per_liter']
     fuel_efficiency = sum(fuel_events) / len(fuel_events) if fuel_events else 0
     
     # Normalize metrics to 0-100 scale based on actual data ranges

@@ -67,24 +67,36 @@ async def upload_csv(file: UploadFile = File(...), clear_data: bool = Form(True)
         
         rows = parse_csv_content(content_str)
         
-        db = get_db()
-        
-        # Clear existing data if requested
-        if clear_data:
-            db.clear_data()
-        
-        # Process each row and create employees if needed
-        for row in rows:
-            # Get or create employee
-            employee = db.get_employee_by_role(row['employee_code'])
+        with get_db() as conn:
+            cursor = conn.cursor()
             
-            if not employee:
-                employee_id = db.add_employee(row['employee_name'], row['employee_code'], 'Driver')
-            else:
-                employee_id = employee.id
+            # Clear existing data if requested
+            if clear_data:
+                cursor.execute("DELETE FROM events")
+                cursor.execute("DELETE FROM employees")
             
-            # Insert event
-            db.add_event(employee_id, row['date'], row['type'], row['value'], row['notes'])
+            # Process each row and create employees if needed
+            for row in rows:
+                # Get or create employee
+                cursor.execute("SELECT id FROM employees WHERE role = %s", (row['employee_code'],))
+                employee = cursor.fetchone()
+                
+                if not employee:
+                    cursor.execute("""
+                        INSERT INTO employees (name, role, branch)
+                        VALUES (%s, %s, %s) RETURNING id
+                    """, (row['employee_name'], row['employee_code'], 'Driver'))
+                    employee_id = cursor.fetchone()['id']
+                else:
+                    employee_id = employee['id']
+                
+                # Insert event
+                cursor.execute("""
+                    INSERT INTO events (employee_id, date, type, value, notes)
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (employee_id, row['date'], row['type'], row['value'], row['notes']))
+            
+            conn.commit()
         
         return CSVUploadResponse(
             rows_inserted=len(rows),
