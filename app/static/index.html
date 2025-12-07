@@ -186,6 +186,11 @@
                     // Show dashboard after successful upload
                     document.getElementById('dashboardSection').style.display = 'block';
                     loadScores();
+                    
+                    // If using blob upload, log the blob URL
+                    if (result.blob_url) {
+                        console.log('File saved to Blob:', result.blob_url);
+                    }
                 } else {
                     document.getElementById('uploadResult').innerHTML = 
                         `<div class="alert alert-danger">Error: ${result.detail}</div>`;
